@@ -15,20 +15,39 @@ tags:
 &emsp;&emsp;当然首先需要一个`GitHub`的账户，没有的同学请自行百度。<br>
 &emsp;&emsp;然后新建一个仓库，不会的同学也自行百度一下。本文主要讲解如何把默认仓库改造成`GitHub Pages`，以适应博客所需。
 1. 在新建的仓库上选择`Setting`，如下图。
-
-2. 修改仓库名称为`yourname.github.io`，如图。
-**&emsp;&emsp;这个是很重要的，一定起名为这种格式，否则最后提交文章时会出现新的分支，而不是master。yourname是指你的登录账户名称，也就是user.name，不是user.email**
+![新仓库设置](https://s2.ax1x.com/2020/02/21/3uHPBV.jpg)
+2. 修改仓库名称为`yourname.github.io`，如上图。
+**&emsp;&emsp;这个是很重要的，一定起名为这种格式，否则最后提交文章时会出现新的分支，而不是master。yourname是指你的登录账户名称，也就是user.name，不是user.email。**
 
 3. 修改`GitHub Pages`的设置项`source`为`master`，如图。
 **&emsp;&emsp;对于新建的仓库，需要添加一个文件之后，才可以选到这一项，否则是灰色的不可选**
+![source设置](https://s2.ax1x.com/2020/02/21/3uHmcR.png)
 
-4. 网上很多教程都说要开启SSH，其实没必要，所以这里不再写。
+4. 配置SSH Key，这个是用来后期关联GitHub时避免每次都输入用户名和密码的。
+    1. 在命令行中输入`cd ~/.ssh`，如果成功则直接执行第4步。
+    2. 第1步命令执行报错，说明以前没有生成过`SSH Key`。则首先执行下面命令。
+    ``` 
+    git config --global user.name "GitHub用户名"
+    git config --global user.email "登录邮箱"
+    ```
+    3. 执行命令生成秘钥 `SSH Key`。此命令需要按照提示完成三次回车。
+    ```
+    ssh-keygen -t rsa -C "登录邮箱"
+    ```
+    4. 在`.ssh`目录中执行`cat id_rsa.pub`，获取到生成的`SSH Key`。
+    5. 执行命令，将GitHub加入到本机SSH可信列表。
+    ```
+    ssh -T git@github.com
+    ```
+    6. 将本机生成的`SSH Key`添加到`GitHub`上。<br>
+    在账户的设置页面，选择`SSH and GPG keys`。如下图：
+    ![设置SSH Key](https://s2.ax1x.com/2020/02/24/3GP3e1.jpg)
 5. 关于自定义域名（`Custom domain`），有以下几点要求：
-    - 自定义域名保存后会在`master`自动生成一个`CNAME`的文件
-    - 其实这个文件是可以自己添加的，但是一定是叫`CNAME`
-    - 其内容只能有一个域名
-    - 其内容必须是一个裸域，类似`www.example.com`、`blog.example.com`、`example.com`，`com`可以换成其他的后缀
-    - 其内容只能用于一个`GitHub`仓库，如果绑定了其他的仓库，则不能再使用了
+    + 自定义域名保存后会在`master`自动生成一个`CNAME`的文件
+    + 其实这个文件是可以自己添加的，但是一定是叫`CNAME`
+    + 其内容只能有一个域名
+    + 其内容必须是一个裸域，类似`www.example.com`、`blog.example.com`、`example.com`，`com`可以换成其他的后缀
+    + 其内容只能用于一个`GitHub`仓库，如果绑定了其他的仓库，则不能再使用了
 
 ### 本地安装Hexo
 &emsp;&emsp;首先得安装`Node`，如果本机有，则要升级到最新版。
@@ -103,6 +122,7 @@ hexo g -d
 &emsp;&emsp;在日常写完文章之后，都可以在本地实时预览，不需要每次都重启`hexo s`，但是想要部署到线上，则需要如下操作。
 1. 在网站根目录的命令行中执行命令：
 ``` js
+hexo clean
 hexo g -d
 ```
 
@@ -123,8 +143,10 @@ git clone git@github.com:theme_url themes\name
 ### 公司和家里同时操作的解决方案
 &emsp;&emsp;命令`hexo g -d`只会把生成的文章上传到GitHub，整个网站的源码其实并没有上传。所以要实现公司和家里多台电脑同时写文章的还需要一些手段。<br/>
 &emsp;&emsp;该手段的根本思想就是再建一个分支，把源码上传到该分支上，多地电脑同时操作这个分支就可以了。
-1. 首先，创建`hexo`的分支。
+1. 首先，创建`hexo`的分支。（在箭头指的输入框中输入然后回车即可）
+![创建分支](https://s2.ax1x.com/2020/02/21/3u6luj.png)
 2. 将该分支设置为**默认分支**。
+![指定默认分支](https://s2.ax1x.com/2020/02/21/3uc0W8.png)
 3. 在创建博客的电脑上，把`hexo`分支克隆到本地。
 ``` git
 git clone -b branch.git
