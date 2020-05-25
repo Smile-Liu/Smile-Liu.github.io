@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple_128x128.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon_32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon_16x16.png">
+  <link rel="mask-icon" href="/images/apple_logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"smile-liu.github.io","root":"/","scheme":"Gemini","version":"7.7.1","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="Spring&amp;SpringBoot序列化和反序列化的研究">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Spring序列化和反序列化">
+<meta property="og:url" content="http://smile-liu.github.io/2020/03/10/Spring%E5%BA%8F%E5%88%97%E5%8C%96%E5%92%8C%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/index.html">
+<meta property="og:site_name" content="Smile&#39;s Blog">
+<meta property="og:description" content="Spring&amp;SpringBoot序列化和反序列化的研究">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://s1.ax1x.com/2020/03/16/8JZ656.png">
+<meta property="article:published_time" content="2020-03-09T16:00:00.000Z">
+<meta property="article:modified_time" content="2020-05-25T09:44:26.449Z">
+<meta property="article:author" content="Smile Liu">
+<meta property="article:tag" content="Technology">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://s1.ax1x.com/2020/03/16/8JZ656.png">
+
+<link rel="canonical" href="http://smile-liu.github.io/2020/03/10/Spring%E5%BA%8F%E5%88%97%E5%8C%96%E5%92%8C%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>Spring序列化和反序列化 | Smile's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Smile's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <p class="site-subtitle">技术和生活</p>
+  </div>
+
+  <div class="site-nav-right"></div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://smile-liu.github.io/2020/03/10/Spring%E5%BA%8F%E5%88%97%E5%8C%96%E5%92%8C%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Smile Liu">
+      <meta itemprop="description" content="Technology & Life">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Smile's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Spring序列化和反序列化
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-03-10 00:00:00" itemprop="dateCreated datePublished" datetime="2020-03-10T00:00:00+08:00">2020-03-10</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-05-25 17:44:26" itemprop="dateModified" datetime="2020-05-25T17:44:26+08:00">2020-05-25</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Technology/" itemprop="url" rel="index">
+                    <span itemprop="name">Technology</span>
+                  </a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Technology/Java/" itemprop="url" rel="index">
+                    <span itemprop="name">Java</span>
+                  </a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Technology/Java/Spring/" itemprop="url" rel="index">
+                    <span itemprop="name">Spring</span>
+                  </a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Technology/Java/Spring/SpringBoot/" itemprop="url" rel="index">
+                    <span itemprop="name">SpringBoot</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span>
+            <div class="post-description">Spring&SpringBoot序列化和反序列化的研究</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>&emsp;&emsp;最近在开发时遇到一个现象：PO实体（从数据库里查出来的）中为<code>null</code>值的<code>Long</code>、<code>Integer</code>、<code>Double</code>等非<code>String</code>类型的字段，经过HTTP调用，得到的返回值都成了<code>-1</code>，然后页面操作再提交到后台时，这些字段的值就变成了<code>-1</code>，也就是说，本来是<code>null</code>的字段经过一次前端就变成了<code>-1</code>，然后以<code>-1</code>入库。而<code>-1</code>又可能是业务数据，去不得，改不了。所幸最后前后端协作解决了这个问题（解决方案写在最后），但我认为可以通过序列化的方式就可以解决，所以要研究透彻这个<code>Spring</code>序列化的原理，以及如何自定义序列化。</p>
+<a id="more"></a>
+
+<h1 id="数据处理在HTTP中的位置"><a href="#数据处理在HTTP中的位置" class="headerlink" title="数据处理在HTTP中的位置"></a>数据处理在HTTP中的位置</h1><p>&emsp;&emsp;在<code>DispatchereServlet</code>通过<code>HandlerMapping</code>获得<code>HandlerExecutionChain</code>，拿到<code>HandlerAdapter</code>后，会针对每个请求实例化一个<code>ServletInvocableHandlerMethod(父类是InvocableHandlerMethod)</code>来进行请求（读入，<code>ServletInvocableHandlerMethod</code>的属性<code>argumentResolvers</code>来处理。该属性是<code>HandlerMethodArgumentResolverComposite</code>类，组合模式）和响应（写出，<code>ServletInvocableHandlerMethod</code>的属性<code>returnValueHandlerMethod</code>来处理。该属性是<code>HandlerMethodReturnValueHandlerComposite</code>类）的数据处理。以<code>Processor</code>结尾的类既是读取又是写入<br/></p>
+<p><strong>读入</strong>：数据读入的核心接口是<code>HandlerMethodArgumentResolver</code></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">boolean</span> <span class="title">supportsParameter</span><span class="params">(MethodParameter parameter)</span></span>; <span class="comment">// 检测该类是否支持</span></span><br><span class="line"></span><br><span class="line"><span class="function">Object <span class="title">resolverArgument</span><span class="params">(MethodParameter parameter, ModelAndViewContainer mavContainer, NativeWebRequest webRequest, WebDataBinderFactory binderFactory)</span></span>; <span class="comment">// 解析参数</span></span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;<code>@InvocableHandlerMethod # getMethodArgumentValues()</code>找到方法的所有参数<code>MethodParameter[]</code>，遍历，由<code>HandlerMethodArgumentResolver # supportsParameter</code>匹配每个参数的解析器（在<code>HandlerMethodArgumentResolverComposite</code>里注册的<code>HandlerMethodArgumentResolver</code>有26个之多，在<code>RequestMappingHandlerAdapter</code>里面注册的），然后调用<code>HandlerMethodArgumentResolver # resolveArgument</code>解析出这个参数的参数值。<br/><br>&emsp;&emsp;有以下几类解析器（摘自<a href="https://www.jianshu.com/p/f4653fe8c935" target="_blank" rel="noopener">《SpringMVC 4.3 源码分析之 HandlerMethodArgumentResolver》</a>）：</p>
+<ol>
+<li>基于<code>Name</code>从<code>URI Template Variable</code>, <code>HttpServletRequest</code>, <code>HttpSession</code>, <code>Http Header</code>中获取数据</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>取值方式</th>
+<th>解析器类名</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>直接定义的参数、<code>@RequestParam</code>修饰的简单类型</td>
+<td><code>RequestParamMethodArgumentResolver</code></td>
+<td>-</td>
+</tr>
+<tr>
+<td><code>@SessionAttribute</code>修饰的参数</td>
+<td><code>SessionAttributeMethodArgumentResolver</code></td>
+<td>一般是通过<code>HttpSevletRequest.getAttribute(name,RequestAttributes.SCOPE_SESSION)</code>获取</td>
+</tr>
+<tr>
+<td><code>@RequestHeader</code>修饰的非Map类型参数</td>
+<td><code>RequestHeaderMethodArgumentResolver</code></td>
+<td>通过<code>HttpServletRequest.getHeaderValues(name)</code>获取</td>
+</tr>
+<tr>
+<td><code>@RequestAttribute</code>修饰的参数</td>
+<td><code>RequestAttributeMethodArgumentResolver</code></td>
+<td>通过<code>HttpSevletRequest.getAttribute(name,RequestAttributes.SCOPE_REQUEST)</code>获取</td>
+</tr>
+<tr>
+<td><code>@PathVariable</code>修饰的参数</td>
+<td><code>PathVariableMethodArgumentResolver</code></td>
+<td>对应URI中的数据</td>
+</tr>
+<tr>
+<td><code>@Value</code>修饰的参数</td>
+<td><code>ExpressionValueMethodArgumentResolver</code></td>
+<td>返回配置数据</td>
+</tr>
+<tr>
+<td><code>@CookieValue</code>修饰的参数</td>
+<td><code>ServletCookieValueMethodArgumentResolver</code></td>
+<td>通过<code>HttpServletRequest.getCookies</code>获取</td>
+</tr>
+<tr>
+<td>这类解析器的基类是<code>AbstractNamedValueMethodArgumentResolver</code>（这里有策略和模板模式）</td>
+<td></td>
+<td></td>
+</tr>
+</tbody></table>
+<ol start="2">
+<li>参数类型是Map的读取数据</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>取值方式</th>
+<th>解析器类名</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>@RequestParam</code>修饰的<code>Map</code></td>
+<td><code>RequestParamMapMethodArgumentResolver</code></td>
+<td>Map是<code>LinkedHashMap</code></td>
+</tr>
+<tr>
+<td><code>@RequestHeader</code>修饰的Map</td>
+<td><code>RequestHeaderMapMethodArgumentResolver</code></td>
+<td>-</td>
+</tr>
+<tr>
+<td><code>@PathVariable</code>修饰的Map</td>
+<td><code>PathVariableMapMethodArgumentResolver</code></td>
+<td>把URI中定义的变量收集到参数里面</td>
+</tr>
+<tr>
+<td>直接写的Map</td>
+<td><code>MapMethodProcessor</code></td>
+<td>从<code>ModelAndViewContainer</code>中获取<code>Model</code>里面的数据</td>
+</tr>
+</tbody></table>
+<ol start="3">
+<li>参数类型是一个自定义对象的读取数据</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>取值方式</th>
+<th>解析器类名</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>对象类型（Not Simple），或者加注解<code>@ModelAttribute</code>不限类型</td>
+<td><code>ModelAttributeMethodProcessor</code></td>
+<td>实际的类是<code>ServletModelAttributeMethodProcessor</code></td>
+</tr>
+</tbody></table>
+<ol start="4">
+<li>基于<code>Content-Type</code>利用<code>HttpMessageConverter</code>将输入流转换成对应的参数</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>取值方式</th>
+<th>解析器类名</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>@RequestPart</code>修饰的参数</td>
+<td><code>RequestPartMethodArgumentResolver</code></td>
+<td>处理<code>MultipartFile</code>或<code>javax.servlet.http.Part</code>类型的参数</td>
+</tr>
+<tr>
+<td><code>HttpEntity</code>或<code>RequestEntity</code>类型的参数</td>
+<td><code>HttpEntityMethodProcessor</code></td>
+<td>-</td>
+</tr>
+<tr>
+<td><code>@RequestBody</code>修饰的参数</td>
+<td><code>RequestResponseBodyMethodProcessor</code></td>
+<td>利用<code>HttpMessageConverter</code>进行参数转换</td>
+</tr>
+<tr>
+<td>这类解析器的基类是<code>AbstractMessageConverterMethodArgumentResolver</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><p></td>
+<td></td>
+<td></td>
+</tr>
+</tbody></table>
+<p><strong>写出</strong>：数据写出的核心接口是<code>HandlerMethodReturnValueResolver</code></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">boolean</span> <span class="title">supportsReturnType</span><span class="params">(MethodParameter returnType)</span></span>; <span class="comment">// 检测该类是否支持</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">handlerReturnValue</span><span class="params">(Object returnValue, MethodParameter returnType, ModelAndViewContainer mavContainer, NativeWebRequest webRequest)</span></span>; <span class="comment">// 解析参数</span></span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;根据返回值类型，总结以下几个常用的解析器：</p>
+<ol>
+<li>返回值是字符串的</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>解析器类名</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>ViewNameMethodReturnValueHandler</code></td>
+<td>把返回值做为视图名称<code>ViewName</code>放入<code>ModelAndView</code>中，并将其返回</td>
+</tr>
+</tbody></table>
+<ol start="2">
+<li>返回值是<code>Map</code></li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>解析器类名</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>MapMethodProcessor</code></td>
+<td>把返回值的每个字段和值放入<code>ModelAndViewContainer</code></td>
+</tr>
+</tbody></table>
+<ol start="3">
+<li>返回值是自定义对象</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>解析器类名</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>ModelAttributeMethodProcessor</code></td>
+<td>实际是<code>ServletModelAttributeMethodProcessor</code>，以自定义对象的类名为Key，对象值为Value，放入<code>ModelAndViewContainer</code>，跳转到默认的<code>View</code></td>
+</tr>
+</tbody></table>
+<ol start="4">
+<li><code>@ResponseBody</code>注解修饰</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>解析器类名</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>RequestResponseBodyMethodProcessor</code></td>
+<td>实际是<code>AbstractMessageConverterMethodProcessor</code>，通过输入输出流<code>InputStream&amp;OutputStream</code>的方式将数据转交给<code>HttpMessageConverter</code>，由它进行后续的处理</td>
+</tr>
+</tbody></table>
+<h1 id="HttpMessageConverter的处理过程"><a href="#HttpMessageConverter的处理过程" class="headerlink" title="HttpMessageConverter的处理过程"></a><code>HttpMessageConverter</code>的处理过程</h1><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">boolean</span> <span class="title">canRead</span><span class="params">(Class&lt;?&gt; clazz, MediaType mediaType&gt;)</span></span>; <span class="comment">// 校验是否可读取</span></span><br><span class="line"><span class="function"><span class="keyword">boolean</span> <span class="title">canWrite</span><span class="params">(Class&lt;?&gt; clazz, MediaType mediaType)</span></span>; <span class="comment">// 校验是否可写出</span></span><br><span class="line"><span class="function">List&lt;MediaType&gt; <span class="title">getSupportedMediaTypes</span><span class="params">()</span></span>;</span><br><span class="line"><span class="function">T <span class="title">read</span><span class="params">(Class&lt;? extends T&gt; clazz, HttpInputMessage inputMessage)</span></span>; <span class="comment">// 读取</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">write</span><span class="params">(T t, MediaType mediaType, HttpOutputMessage outputMessage)</span></span>; <span class="comment">// 写出</span></span><br></pre></td></tr></table></figure>
+
+<p>（摘自 <a href="https://segmentfault.com/a/1190000012658289" target="_blank" rel="noopener">《springboot学习（三）——使用HttpMessageConverter进行http序列化和反序列化》</a> <br/><br>&emsp;&emsp;HTTP协议的处理过程，TCP字节流 &lt;—&gt; HttpRequest/HttpResponse &lt;—&gt; HttpMessageConverter &lt;—&gt; 内部对象，涉及到两个序列化。第一个是TCP字节流到HttpRequest和HttpResponse到TCP字节流，这一步Servlet容器已经处理好了；第二个是框架内部的HttpMessageConverter要做的工作。<br/><br><img src="https://s1.ax1x.com/2020/03/16/8JZ656.png" alt="HTTP"><br/></p>
+<h2 id="MediaType"><a href="#MediaType" class="headerlink" title="MediaType"></a>MediaType</h2><table>
+<thead>
+<tr>
+<th>类名</th>
+<th>支持的JavaType</th>
+<th>支持的MediaType</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>ByteArrayHttpMessageConverter</code></td>
+<td>byte[]</td>
+<td>application/octet-stream, <em>/</em></td>
+</tr>
+<tr>
+<td><code>StringHttpMessageConverter</code></td>
+<td>String</td>
+<td>text/plain,<em>/</em></td>
+</tr>
+<tr>
+<td><code>ResourceHttpMessageConverter</code></td>
+<td>Resource</td>
+<td><em>/</em></td>
+</tr>
+<tr>
+<td><code>SourceHttpMessageConverter</code></td>
+<td>Source</td>
+<td>application/xml,text/xml,application/*+xml</td>
+</tr>
+<tr>
+<td><code>AllEncompassingFormHttpMessageConverter</code></td>
+<td>Map&lt;K,List&lt;?&gt;&gt;</td>
+<td>application/x-www-form-urlencoded,multipart/form-data</td>
+</tr>
+<tr>
+<td><code>MappingJackson2HttpMessageConverter</code></td>
+<td>Object</td>
+<td>application/json,application/*+json</td>
+</tr>
+<tr>
+<td><code>Jaxb2BootElementHttpMessageConverter</code></td>
+<td>Object</td>
+<td>application/xml,text/xml,application/*+xml</td>
+</tr>
+<tr>
+<td><code>FastJsonHttpMessageConverter</code></td>
+<td>Object</td>
+<td><em>/</em></td>
+</tr>
+</tbody></table>
+<h2 id="HttpMessageConverter数据组装"><a href="#HttpMessageConverter数据组装" class="headerlink" title="HttpMessageConverter数据组装"></a><code>HttpMessageConverter</code>数据组装</h2><p>&emsp;&emsp;核心接口是<code>HttpMessageConverter</code>。框架将其实现类组装成一个List，在从请求和响应中读取数据时，挨个遍历，找到能解析数据的一个实现类去执行真正的逻辑。<br>&emsp;&emsp;这个List的赋值渠道有三个，分别是：</p>
+<ol>
+<li>没有其他配置的情况下，默认使用<code>ha（@RequestMapping注解对应的RequestMappingHandlerAdapter）</code>构造器添加的这四个<code>HttpMessageConverter</code><ul>
+<li><code>ByteArrayHttpMessageConverter</code>，处理字节</li>
+<li><code>StringHttpMessageConverter</code>，处理字符串</li>
+<li><code>SourceHttpMessgeConverter</code>，</li>
+<li><code>AllEncompassingFormHttpMessageConverter</code></li>
+</ul>
+</li>
+<li>配置xml文件中使用<code>mvc:annotation-driven</code>的子标签<code>mvc:message-converters</code>。会在类<code>AnnotationDrivenBeanDefinitionParser</code>中解析，如果依赖了<code>jackson</code>或者<code>gson</code>，则自动将<code>MappingJackson2HttpMessageConverter</code>注册成<code>HttpMessageConverter</code></li>
+<li>通过<code>RequestMappingHandlerAdapter#setMessageConverter</code>方法进行设置</li>
+</ol>
+<h2 id="MediaType的匹配规则"><a href="#MediaType的匹配规则" class="headerlink" title="MediaType的匹配规则"></a>MediaType的匹配规则</h2><p>&emsp;&emsp;HTTP请求的Header中有<code>Accept</code>和<code>Content-Type</code>这两个参数。<code>Accept</code>表示发送端（客户端）希望接受的类型；<code>Content-Type</code>代表发送端（客户端）发送的实体数据的类型。一个请求如果没有指定<code>Accept</code>，则视为默认的 <code>*/*</code>；如果没有指定<code>Content-Type</code>，视为空，而且必须是具体的类型，不能包含 <code>*</code>。<br>在<code>AbstractMessageConverterMethodProcessor#writeWithMessageConverters</code>中写明了匹配关系。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 读入 @AbstractMessageConverterMethodArgumentResolver</span></span><br><span class="line"><span class="keyword">protected</span> &lt;T&gt; <span class="function">Object <span class="title">readWithMessageConverters</span><span class="params">(HttpInputMessage inputMessage, MethodParameter paramter, Type targetType)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    MediaType contentType;</span><br><span class="line">    <span class="keyword">boolean</span> noContentType = <span class="keyword">false</span>;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        contentType = inputMessage.getHeaders().getContentType();</span><br><span class="line">    &#125; <span class="keyword">catch</span> (InvalidMediaTypeException ex) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> HttpMediaTypeNotSupportedException(ex.getMessage());</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (contentType == <span class="keyword">null</span>) &#123;</span><br><span class="line">        noContentType = <span class="keyword">true</span>;</span><br><span class="line">        contentType = MediaType.APPLICATION_OCTET_STREAM;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    Class&lt;?&gt; contextClass = parameter.getContaingClass();</span><br><span class="line">    Class&lt;T&gt; targetClass = (targetType <span class="keyword">instanceof</span> Class ? (Class&lt;T&gt;) target : <span class="keyword">null</span>);</span><br><span class="line">    <span class="keyword">if</span> (targetClass == <span class="keyword">null</span>) &#123;</span><br><span class="line">        ResolvableType resolvableType = ResolvableType.forMethodParameter(parameter);</span><br><span class="line">        targetClass = (Class&lt;T&gt;) resolvableType.resolve();</span><br><span class="line">    &#125;</span><br><span class="line">    HttpMethod httpMethod = (inputMessage <span class="keyword">instanceof</span> HttpRequest ? ((HttpRequest) inputMessage).getMethod() : <span class="keyword">null</span>);</span><br><span class="line">    Object body = NO_VALUE;</span><br><span class="line"></span><br><span class="line">    EmptyBodyCheckingHttpInputMessage message;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        message = <span class="keyword">new</span> EmptyBodyCheckingHttpInputMessage(inputMessage);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (HttpMessageConverter&lt;?&gt; converter : <span class="keyword">this</span>.messageConverters) &#123;</span><br><span class="line">            Class&lt;HttpMessageConverter&lt;?&gt;&gt; converterType = (Class&lt;HttpMessageConverter&lt;?&gt;&gt;)  converter.getClass();</span><br><span class="line">            GenericHttpMessageConverter&lt;?&gt; genericConverter = (converter <span class="keyword">instanceof</span> GrenericHttpMessageConverter ? (GenericHttpMessageConverter&lt;?&gt;)) converter : <span class="keyword">null</span>;</span><br><span class="line">            <span class="keyword">if</span> (genericConverter != <span class="keyword">null</span> ? genericConverter.canRead(targetType, contextClass, contentType) : (targetClass != <span class="keyword">null</span> &amp;&amp; converter.canRead(targetType, contentType))) &#123;</span><br><span class="line">                <span class="keyword">if</span> (message.hasBody()) &#123;</span><br><span class="line">                    HttpInputMessage msgToUse = getAdvice().beforeBodyRead(message, parameter, targetType, converterTypes);</span><br><span class="line">                    body = (genericConverter != <span class="keyword">null</span> ? genericConverter.read(targetType, contextClass, msgToUse) : ((HttpMessageeConverter&lt;T&gt;) converter).read(targetClass, msgToUse));</span><br><span class="line">                    body = getAdvice().afterBodyRead(body, msgToUse, parameter, targetType, converterType);</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    body = getAdvice().handleEmptyBody(<span class="keyword">null</span>, message, parameter, targetType, converterType);</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">catch</span> (IOException ex) &#123;&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">// 这是写出的一二三步 @AbstractMessageConverterMethodProcessor</span></span><br><span class="line"><span class="comment">// 写出第一步</span></span><br><span class="line"><span class="comment">// 取出客户端希望接收的MediaType</span></span><br><span class="line"><span class="comment">// 根据Controller的返回类型，遍历所有的Converter，找到能够返回的MediaType</span></span><br><span class="line">HttpServletRequest request = inputMessage.getServletRequest();</span><br><span class="line">List&lt;MediaType&gt; acceptableTypes = getAcceptableMediaTypes(request);</span><br><span class="line">List&lt;MediaType&gt; producibleTypes = getProducibleMediaTypes(request, valueType, targetType);</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (body != <span class="keyword">null</span> &amp;&amp; producibleTypes.isEmpty()) &#123;</span><br><span class="line">    <span class="keyword">throw</span> <span class="keyword">new</span> HttpMessageNotWritableException(<span class="string">"No converter found for return value of type: "</span> + valueType);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 写出第二步</span></span><br><span class="line"><span class="comment">// 遍历找到的两个List&lt;MediaType&gt;，判断是否兼容，然后取到更具体的MediaType</span></span><br><span class="line"><span class="comment">// 把具体的MediaType列表进行排序，按照 q值（QualifierFactor，品质因子） 和 具体程度 排序，一般是大的优先</span></span><br><span class="line">List&lt;MediaType&gt; mediaTypesToUse = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line"><span class="keyword">for</span> (MediaType requestedType : acceptableTypes) &#123;</span><br><span class="line">    <span class="keyword">for</span> (MediaType producibleType : producibleTypes) &#123;</span><br><span class="line">        <span class="keyword">if</span> (requestedType.isCompatibleWith(producibleType)) &#123;</span><br><span class="line">            mediaTypesToUse.add(getMostSpecificMediaType(requestedType, producibleType));</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">if</span> (mediaTypesToUse.isEmpty()) &#123;</span><br><span class="line">    <span class="keyword">if</span> (body != <span class="keyword">null</span>) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> HttpMediaTypeNotAcceptableException(producibleTypes);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">&#125;</span><br><span class="line">MediaType.sortBySpecificityAndQuality(mediaTypesToUse);</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> (MediaType mediaType : mediaTypesToUse) &#123;</span><br><span class="line">    <span class="keyword">if</span> (mediaType.isConrete()) &#123;</span><br><span class="line">        selectedMediaType = mediaType;</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (mediaType.isPresentIn(ALL_APPLICATION_MEDIA_TYPES)) &#123;</span><br><span class="line">        selectedMediaType = MediaType.APPLICATION_OCTET_STREAM;</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 写出第三步</span></span><br><span class="line"><span class="comment">// 选择一个能处理MediaType的Converter，根据添加顺序进行优先级排序。排在前面的优先处理</span></span><br><span class="line"><span class="keyword">if</span> (selectedMediaType != <span class="keyword">null</span>) &#123;</span><br><span class="line">    selectedMediaType = selectedMediaType.removeQualityValue();</span><br><span class="line">    <span class="keyword">for</span> (HttpMessageConverter&lt;?&gt; converter : <span class="keyword">this</span>.messageConverters) &#123;</span><br><span class="line">        GenericHttpMessageConverter genericConverter = (converter <span class="keyword">instanceof</span> GenericHttpMessageConverter ? (GenericHttpMessageConverter&lt;?&gt;) converter : <span class="keyword">null</span>);</span><br><span class="line">        <span class="keyword">if</span> (genericConverter != <span class="keyword">null</span> ? ((GenericHttpMessageConverter) converter).canWrite(targetType, valueType, selectedMediaType) : converter.canWrite(valueType, selectedMediaType)) &#123;</span><br><span class="line">            body = getAdvice().beforeBodyWrite(body, returnType, selectedMediaType, (Class&lt;? extends HttpMessageConverter&lt;?&gt;&gt;) converter.getClass(), inputMessage, outputMessage);</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (body != <span class="keyword">null</span>) &#123;</span><br><span class="line">                Object theBody = body;</span><br><span class="line">                addContentDispositionHeader(inputMessage, outputMessage);</span><br><span class="line">                <span class="keyword">if</span> (genericConverter != <span class="keyword">null</span>) &#123;</span><br><span class="line">                    genericConverter.write(body, targetType, selectedMediaType, outputMessage);</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    ((HttpMessageConverter) converter).write(body, selectedMediaType, outputMessage);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="SpringBoot的序列化和反序列化"><a href="#SpringBoot的序列化和反序列化" class="headerlink" title="SpringBoot的序列化和反序列化"></a>SpringBoot的序列化和反序列化</h1><p>&emsp;&emsp;SpringBoot也是基于SpringMVC的，所以对于参数的读取和数据的返回也是一样的原理。用的最多的还是<code>@RequestBody</code>和<code>@ResponseBody</code>（<code>@RestController</code>包含该注解）</p>
+<h1 id="如何自定义"><a href="#如何自定义" class="headerlink" title="如何自定义"></a>如何自定义</h1><ol>
+<li>方法一：实现<code>HandlerMethodArgumentResolver</code>、<code>HandlerMethodReturnValueResolver</code></li>
+<li>方法二：实现<code>HttpMessageConverter</code>（继承<code>AbstractHttpMessageConverter</code>），并将它放入<code>AbstractMessageConverterMethodArgumentResolver#messageConverters</code>的List中，根据前后顺序排列优先级，将它匹配到具体的处理逻辑中；编写<code>WebConfig</code>（通过继承<code>WebMvcOnfigurerAdapter</code>）</li>
+</ol>
+<h1 id="最后"><a href="#最后" class="headerlink" title="最后"></a>最后</h1><p>&emsp;&emsp;学好知识，努力解决Bug</p>
+<h1 id="简单的解决方案"><a href="#简单的解决方案" class="headerlink" title="简单的解决方案"></a>简单的解决方案</h1><p>&emsp;&emsp;因为<code>SpringBoot</code>默认的序列化是使用<code>jackson</code>，而它的基本原理是调用<code>get</code>和<code>set</code>方法，所以在具体的实体里面重写<code>get</code>和<code>set</code>方法，对特殊的数据进行修改，然后让前端也对特殊数据进行处理就可以解决这个问题。特别注意：因为<code>Mybatis</code>的<code>SQL</code>语句中的数据也使用<code>get</code>和<code>set</code>，所以要注意查询条件和数据的正确性。</p>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div></div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wepay.jpg" alt="Smile Liu 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.jpg" alt="Smile Liu 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Smile Liu
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="http://smile-liu.github.io/2020/03/10/Spring%E5%BA%8F%E5%88%97%E5%8C%96%E5%92%8C%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/" title="Spring序列化和反序列化">http://smile-liu.github.io/2020/03/10/Spring序列化和反序列化/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Technology/" rel="tag"># Technology</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/02/25/2020%E5%B9%B4%E4%B9%A6%E5%8D%95/" rel="prev" title="2020年书单">
+      <i class="fa fa-chevron-left"></i> 2020年书单
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#数据处理在HTTP中的位置"><span class="nav-number">1.</span> <span class="nav-text">数据处理在HTTP中的位置</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#HttpMessageConverter的处理过程"><span class="nav-number">2.</span> <span class="nav-text">HttpMessageConverter的处理过程</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#MediaType"><span class="nav-number">2.1.</span> <span class="nav-text">MediaType</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#HttpMessageConverter数据组装"><span class="nav-number">2.2.</span> <span class="nav-text">HttpMessageConverter数据组装</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#MediaType的匹配规则"><span class="nav-number">2.3.</span> <span class="nav-text">MediaType的匹配规则</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#SpringBoot的序列化和反序列化"><span class="nav-number">3.</span> <span class="nav-text">SpringBoot的序列化和反序列化</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#如何自定义"><span class="nav-number">4.</span> <span class="nav-text">如何自定义</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#最后"><span class="nav-number">5.</span> <span class="nav-text">最后</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#简单的解决方案"><span class="nav-number">6.</span> <span class="nav-text">简单的解决方案</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Smile Liu"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">Smile Liu</p>
+  <div class="site-description" itemprop="description">Technology & Life</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">5</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">7</span>
+        <span class="site-state-item-name">分类</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Smile-Liu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;Smile-Liu" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:ye_wu_xi@sina.cn" title="E-Mail → mailto:ye_wu_xi@sina.cn" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://stackoverflow.com/SmileLiu" title="StackOverflow → https:&#x2F;&#x2F;stackoverflow.com&#x2F;SmileLiu" rel="noopener" target="_blank"><i class="fa fa-fw fa-stack-overflow"></i>StackOverflow</a>
+      </span>
+  </div>
+  <div class="cc-license motion-element" itemprop="license">
+    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" class="cc-opacity" rel="noopener" target="_blank"><img src="/images/cc-by-nc-sa.svg" alt="Creative Commons"></a>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Smile Liu</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.7.1
+  </div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
